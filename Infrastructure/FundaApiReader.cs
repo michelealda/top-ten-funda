@@ -17,42 +17,47 @@ namespace Infrastructure
     public class FundaApiReader : ISourceReader
     {
         private readonly HttpClient _httpClient;
-        private readonly IRecordRepository _recordRepository;
 
         private const string Key = "ac1b0b1572524640a0ecc54de453ea9f";
 
-        public FundaApiReader(HttpClient httpClient,
-            IRecordRepository recordRepository
-        )
+        public FundaApiReader(HttpClient httpClient)
         {
-            
             _httpClient = httpClient;
-            _recordRepository = recordRepository;
             _httpClient.BaseAddress =
                 new Uri($"http://partnerapi.funda.nl/feeds/Aanbod.svc/json/{Key}/");
-            
-            
-            var queryString = "?type=koop&zo=/amsterdam/tuin/&page=1&pagesize=500";
-        }
-        
-        public async Task<IEnumerable<House>> GetGardenHouses(CancellationToken cancellationToken)
-        {
-            // load houses with garden
-            var page = 1;
-            var response = await GetContentAsync<RootObject>(
-                $"?type=koop&zo=/amsterdam/tuin/&page={page}&pagesize=500",
-                cancellationToken);
-            
-            response
-                .Objects
-                .Select(o => House.CreateWithGarden(o.Id, o.MakelaarId, o.MakelaarNaam));
-            
-            
         }
 
-        private TResult MapToHouseWithGarden<TResult>(Object o)
+        public Task<IEnumerable<House>> GetGardenHouses(CancellationToken cancellationToken)
+            => GetHousesImpl("?type=koop&zo=/amsterdam/tuin/", cancellationToken);
+        
+        public Task<IEnumerable<House>> GetHouses(CancellationToken cancellationToken)
+            => GetHousesImpl("?type=koop&zo=/amsterdam/", cancellationToken);
+        
+
+        private async Task<IEnumerable<House>> GetHousesImpl(string url, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var page = 1;
+            var houses = Enumerable.Empty<House>();
+            while (page > 0)
+            {
+                var response = await GetContentAsync<RootObject>(
+                    $"{url}&page={page}&pagesize=500",
+                    cancellationToken);
+
+                houses = houses
+                    .Concat(
+                        response
+                            .Objects
+                            .Select(o =>
+                                House.CreateWithGarden(
+                                    o.Id, o.MakelaarId, o.MakelaarNaam)));
+
+                page = response.Paging.HuidigePagina != response.Paging.AantalPaginas
+                    ? page + 1
+                    : -1;
+            }
+            return houses;
+            
         }
 
         private async Task<T> GetContentAsync<T>(string endpoint, CancellationToken cancellationToken)
@@ -68,9 +73,5 @@ namespace Infrastructure
             return JsonConvert.DeserializeObject<T>(payload);
         }
 
-    }
-
-    public interface IRecordRepository
-    {
     }
 }

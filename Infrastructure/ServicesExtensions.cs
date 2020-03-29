@@ -11,7 +11,7 @@ namespace Infrastructure
 {
     public static class ServicesExtensions
     {
-        public static void ConfigureScraper(this IServiceCollection services)
+        public static void ConfigureApiReader(this IServiceCollection services)
         {
             services
                 .AddHttpClient<ISourceReader, FundaApiReader>()
@@ -24,6 +24,7 @@ namespace Infrastructure
             => HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .OrResult(response => response.StatusCode == (HttpStatusCode)429)
+                .OrResult(response => response.StatusCode == (HttpStatusCode)401)
                 .WaitAndRetryForeverAsync(
                     sleepDurationProvider: (i, response, context) =>
                     {
