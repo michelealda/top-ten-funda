@@ -14,6 +14,8 @@ namespace Infrastructure.Dtos
     {
         public int AantalPaginas { get; set; }
         public int HuidigePagina { get; set; }
+
+        public string VolgendeUrl { get; set; }
     }
 
     public class RootObject

@@ -20,11 +20,21 @@ namespace Api.Controllers
         }
 
         [HttpGet("overall")]
-        public IEnumerable<Stat> GetTop()
-            => _agentStatsService.GetTopTenOverall();
-        
+        public string GetTop()
+            => ConvertToTabular(
+                _agentStatsService
+                    .GetTopTenOverall());
+
+
         [HttpGet("garden")]
-        public IEnumerable<Stat> GetTopWithGarden()
-            => _agentStatsService.GetTopTenWithGarden();
+        public string GetTopWithGarden()
+            => ConvertToTabular(
+                _agentStatsService
+                    .GetTopTenWithGarden());
+        
+        private static string ConvertToTabular(IEnumerable<Stat> stats)
+        => stats
+            .Select((stat, i) => $"{i+1}\t{stat.Name}\t{stat.Value}{Environment.NewLine}" )
+            .Aggregate("", (a, b)=> a+b);
     }
 }

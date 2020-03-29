@@ -52,7 +52,7 @@ namespace Infrastructure
                                 House.CreateWithGarden(
                                     o.Id, o.MakelaarId, o.MakelaarNaam)));
 
-                page = response.Paging.HuidigePagina != response.Paging.AantalPaginas
+                page = !string.IsNullOrEmpty(response.Paging.VolgendeUrl)
                     ? page + 1
                     : -1;
             }
