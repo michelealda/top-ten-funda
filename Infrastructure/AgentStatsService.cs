@@ -1,15 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using Core;
+using Core.Domain;
 
 namespace Infrastructure
 {
-    public interface IAgentStatsService
-    {
-        IEnumerable<Stat> GetTopTenWithGarden();
-        IEnumerable<Stat> GetTopTenOverall();
-
-    }
-    
     public class AgentStatsService : IAgentStatsService
     {
         private readonly IHouseRepository _repository;

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Infrastructure;
+using Core;
+using Core.Domain;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Api.Controllers
 {
@@ -31,10 +30,10 @@ namespace Api.Controllers
             => ConvertToTabular(
                 _agentStatsService
                     .GetTopTenWithGarden());
-        
+
         private static string ConvertToTabular(IEnumerable<Stat> stats)
-        => stats
-            .Select((stat, i) => $"{i+1}\t{stat.Name}\t{stat.Value}{Environment.NewLine}" )
-            .Aggregate("", (a, b)=> a+b);
+            => stats
+                .Select((stat, i) => $"{i + 1}\t{stat.Name}\t{stat.Value}{Environment.NewLine}")
+                .Aggregate("", (a, b) => a + b);
     }
 }

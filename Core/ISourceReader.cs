@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Core.Domain;
 
-namespace Infrastructure
+namespace Core
 {
     public interface ISourceReader
     {

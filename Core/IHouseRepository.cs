@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Core.Domain;
 
-namespace Infrastructure
+namespace Core
 {
     public interface IHouseRepository
     {

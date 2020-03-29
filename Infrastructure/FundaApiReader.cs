@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Core;
+using Core.Domain;
 using Infrastructure.Dtos;
 using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
-using Object = Infrastructure.Dtos.Object;
 
 namespace Infrastructure
 {
@@ -28,13 +26,20 @@ namespace Infrastructure
         }
 
         public Task<IEnumerable<House>> GetGardenHouses(CancellationToken cancellationToken)
-            => GetHousesImpl("?type=koop&zo=/amsterdam/tuin/", cancellationToken);
+            => GetHousesImpl("?type=koop&zo=/amsterdam/tuin/",
+                House.CreateWithGarden,
+                cancellationToken);
         
         public Task<IEnumerable<House>> GetHouses(CancellationToken cancellationToken)
-            => GetHousesImpl("?type=koop&zo=/amsterdam/", cancellationToken);
+            => GetHousesImpl("?type=koop&zo=/amsterdam/", 
+                House.CreateWithNoGarden,
+                cancellationToken);
         
 
-        private async Task<IEnumerable<House>> GetHousesImpl(string url, CancellationToken cancellationToken)
+        private async Task<IEnumerable<House>> GetHousesImpl(
+            string url, 
+            Func<string, int, string, House> createFn,
+            CancellationToken cancellationToken)
         {
             var page = 1;
             var houses = Enumerable.Empty<House>();
@@ -49,7 +54,7 @@ namespace Infrastructure
                         response
                             .Objects
                             .Select(o =>
-                                House.CreateWithGarden(
+                                createFn(
                                     o.Id, o.MakelaarId, o.MakelaarNaam)));
 
                 page = !string.IsNullOrEmpty(response.Paging.VolgendeUrl)
