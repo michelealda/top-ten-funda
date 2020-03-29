@@ -1,38 +1,33 @@
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Core;
-using Microsoft.Extensions.Logging;
-
+[assembly: InternalsVisibleTo("Infrastructure.Tests")]
 namespace Infrastructure
 {
+    
     public class SourceReaderService : GenericBackgroundService
     {
         private readonly ISourceReader _sourceReader;
         private readonly IHouseRepository _houseRepository;
-        private readonly ILogger<SourceReaderService> _logger;
 
         public SourceReaderService(ISourceReader sourceReader,
-            IHouseRepository houseRepository,
-            ILogger<SourceReaderService> logger
+            IHouseRepository houseRepository
             )
         {
             _sourceReader = sourceReader;
             _houseRepository = houseRepository;
-            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             var withGarden = (await _sourceReader.GetGardenHouses(cancellationToken)).ToList();
-            
-            _logger.LogInformation($"Retrieved {withGarden.Count()} houses with garden");
-            
             var allHouses = (await _sourceReader.GetHouses(cancellationToken)).ToList();
-            
-            _logger.LogInformation($"Retrieved {allHouses.Count()} houses");
-            _houseRepository.AddHouses(withGarden);
-            _houseRepository.AddHouses(allHouses);
+
+            _houseRepository.AddHouses(
+                withGarden.Concat(allHouses)
+            );
         }
     }
 }
